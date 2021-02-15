@@ -1,5 +1,5 @@
 /**
- *  Konnected Motion Sensor
+ *  Konnected Fault Sensor
  *
  *  Copyright 2018 Konnected Inc (https://konnected.io)
  *
@@ -14,23 +14,23 @@
  *
  */
 metadata {
-  definition (name: "Konnected Motion Sensor", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid:"generic-motion") {
-    capability "Motion Sensor"
+  definition (name: "Konnected Fault Sensor", namespace: "konnected-io", author: "konnected.io", mnmn: "SmartThings", vid: "generic-contact") {
+    capability "Contact Sensor"
     capability "Sensor"
   }
 
   preferences {
     input name: "normalState", type: "enum", title: "Normal State",
       options: ["Normally Closed", "Normally Open"],
-      defaultValue: "Normally Closed",
-      description: "Most motion sensors are Normally Closed (NC), meaning that the circuit opens when motion is detected. To reverse this logic, select Normally Open (NO)."
+      defaultValue: "Normally Open",
+      description: "Most boiler alarm dry contacts are Normally Open (NO), meaning that the circuit closes when the boiler is in a fault condition. To reverse this logic, select Normally Closed (NC)."
   }
 
   tiles {
     multiAttributeTile(name:"main", type: "generic", width: 6, height: 4, canChangeIcon: true) {
-      tileAttribute ("device.motion", key: "PRIMARY_CONTROL") {
-        attributeState ("inactive", label: "No Motion", icon:"st.motion.motion.inactive", backgroundColor:"#ffffff")
-        attributeState ("active",   label: "Motion",    icon:"st.motion.motion.active",   backgroundColor:"#00a0dc")
+      tileAttribute ("device.contact", key: "PRIMARY_CONTROL") {
+        attributeState ("closed", label: "Fault!", icon:"st.categories.damageAndDanger", backgroundColor:"#e86d13")
+        attributeState ("open",   label: "OK",   icon:"st.Home.home1",   backgroundColor:"#ffffff")
       }
     }
     main "main"
@@ -39,16 +39,16 @@ metadata {
 }
 
 def isClosed() {
-  normalState == "Normally Open" ? "active" : "inactive"
+  normalState == "Normally Closed" ? "open" : "closed"
 }
 
 def isOpen() {
-  normalState == "Normally Open" ? "inactive" : "active"
+  normalState == "Normally Closed" ? "closed" : "open"
 }
 
 // Update state sent from parent app
 def setStatus(state) {
   def stateValue = state == "1" ? isOpen() : isClosed()
-  sendEvent(name: "motion", value: stateValue)
+  sendEvent(name: "contact", value: stateValue)
   log.debug "$device.label is $stateValue"
 }
